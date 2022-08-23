@@ -1,6 +1,8 @@
-
 # Separating Host and Device Code Compilation
-This FPGA tutorial demonstrates how to separate the compilation of a program's host code and device code to save development time.  It's recommended to read the 'fpga_compile' code sample before this one.
+
+This FPGA tutorial demonstrates how to separate the compilation of a
+program's host code and device code to save development time.  It's
+recommended to read the 'fpga_compile' code sample before this one.
 
 | Optimized for                     | Description
 ---                                 |---
@@ -13,17 +15,35 @@ This FPGA tutorial demonstrates how to separate the compilation of a program's h
 
 
 ## Purpose
-Intel® oneAPI DPC++ Compiler only supports ahead-of-time (AoT) compilation for FPGA, which means that an FPGA device image is generated at compile time. The FPGA device image generation process can take hours to complete. Suppose you make a change that is exclusive to the host code. In that case, it is more efficient to recompile your host code only, re-using the existing FPGA device image and circumventing the time-consuming device compilation process.
 
-The compiler provides two different mechanisms to separate device code and host code compilation.
-* Passing the `-reuse-exe=<exe_name>` flag to `dpcpp` instructs the compiler to attempt to reuse the existing FPGA device image.
-* The more explicit "device link" method requires you to separate the host and device code into separate files. When a code change only applies to host-only files, an FPGA device image is not regenerated.
+Intel® oneAPI DPC++ Compiler only supports ahead-of-time (AoT)
+compilation for FPGA, which means that an FPGA device image is
+generated at compile time. The FPGA device image generation process
+can take hours to complete. Suppose you make a change that is
+exclusive to the host code. In that case, it is more efficient to
+recompile your host code only, re-using the existing FPGA device image
+and circumventing the time-consuming device compilation process.
 
-This tutorial explains both mechanisms and the pros and cons of each. The included code sample demonstrates the device link method but does **not** demonstrate the use of the `-reuse-exe` flag.
+The compiler provides two different mechanisms to separate device code
+and host code compilation.
+
+* Passing the `-reuse-exe=<exe_name>` flag to `dpcpp` instructs the
+  compiler to attempt to reuse the existing FPGA device image.
+* The more explicit "device link" method requires you to separate the
+  host and device code into separate files. When a code change only
+  applies to host-only files, an FPGA device image is not regenerated.
+
+This tutorial explains both mechanisms and the pros and cons of
+each. The included code sample demonstrates the device link method but
+does **not** demonstrate the use of the `-reuse-exe` flag.
 
 ### Using the `-reuse-exe` flag
 
-If the device code and options affecting the device have not changed since the previous compilation, passing the `-reuse-exe=<exe_name>` flag to `dpcpp` instructs the compiler to extract the compiled FPGA binary from the existing executable and package it into the new executable, saving the device compilation time.
+If the device code and options affecting the device have not changed
+since the previous compilation, passing the `-reuse-exe=<exe_name>`
+flag to `dpcpp` instructs the compiler to extract the compiled FPGA
+binary from the existing executable and package it into the new
+executable, saving the device compilation time.
 
 **Sample usage:**
 

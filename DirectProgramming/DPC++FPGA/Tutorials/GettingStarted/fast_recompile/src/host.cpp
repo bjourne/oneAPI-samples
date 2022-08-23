@@ -32,52 +32,52 @@ constexpr float kTol = 0.001;
 constexpr size_t kArraySize = 32;
 
 int main() {
-  std::vector<float> vec_a(kArraySize);
-  std::vector<float> vec_b(kArraySize);
-  std::vector<float> vec_r(kArraySize);
+    std::vector<float> vec_a(kArraySize);
+    std::vector<float> vec_b(kArraySize);
+    std::vector<float> vec_r(kArraySize);
 
-  // Fill vectors a and b with random float values
-  for (size_t i = 0; i < kArraySize; i++) {
-    vec_a[i] = rand() / (float)RAND_MAX;
-    vec_b[i] = rand() / (float)RAND_MAX;
-  }
+    // Fill vectors a and b with random float values
+    for (size_t i = 0; i < kArraySize; i++) {
+        vec_a[i] = rand() / (float)RAND_MAX;
+        vec_b[i] = rand() / (float)RAND_MAX;
+    }
 
-  // Select either the FPGA emulator or FPGA device
+    // Select either the FPGA emulator or FPGA device
 #if defined(FPGA_EMULATOR)
-  ext::intel::fpga_emulator_selector device_selector;
+    ext::intel::fpga_emulator_selector device_selector;
 #else
-  ext::intel::fpga_selector device_selector;
+    ext::intel::fpga_selector device_selector;
 #endif
 
-  try {
+    try {
 
-    // Create a queue bound to the chosen device.
-    // If the device is unavailable, a SYCL runtime exception is thrown.
-    queue q(device_selector, dpc_common::exception_handler);
+        // Create a queue bound to the chosen device.
+        // If the device is unavailable, a SYCL runtime exception is thrown.
+        queue q(device_selector, dpc_common::exception_handler);
 
-    // create the device buffers
-    buffer device_a(vec_a);
-    buffer device_b(vec_b);
-    buffer device_r(vec_r);
+        // create the device buffers
+        buffer device_a(vec_a);
+        buffer device_b(vec_b);
+        buffer device_r(vec_r);
 
-    // The definition of this function is in a different compilation unit,
-    // so host and device code can be separately compiled.
-    RunKernel(q, device_a, device_b, device_r, kArraySize);
+        // The definition of this function is in a different compilation unit,
+        // so host and device code can be separately compiled.
+        RunKernel(q, device_a, device_b, device_r, kArraySize);
 
-  } catch (exception const &e) {
-    // Catches exceptions in the host code
-    std::cerr << "Caught a SYCL host exception:\n" << e.what() << "\n";
+    } catch (exception const &e) {
+        // Catches exceptions in the host code
+        std::cerr << "Caught a SYCL host exception:\n" << e.what() << "\n";
 
-    // Most likely the runtime couldn't find FPGA hardware!
-    if (e.code().value() == CL_DEVICE_NOT_FOUND) {
-      std::cerr << "If you are targeting an FPGA, please ensure that your "
-                   "system has a correctly configured FPGA board.\n";
-      std::cerr << "Run sys_check in the oneAPI root directory to verify.\n";
-      std::cerr << "If you are targeting the FPGA emulator, compile with "
-                   "-DFPGA_EMULATOR.\n";
+        // Most likely the runtime couldn't find FPGA hardware!
+        if (e.code().value() == CL_DEVICE_NOT_FOUND) {
+            std::cerr << "If you are targeting an FPGA, please ensure that your "
+                "system has a correctly configured FPGA board.\n";
+            std::cerr << "Run sys_check in the oneAPI root directory to verify.\n";
+            std::cerr << "If you are targeting the FPGA emulator, compile with "
+                "-DFPGA_EMULATOR.\n";
+        }
+        std::terminate();
     }
-    std::terminate();
-  }
 
   // At this point, the device buffers have gone out of scope and the kernel
   // has been synchronized. Therefore, the output data (vec_r) has been updated

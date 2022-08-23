@@ -191,6 +191,7 @@ image optimization reports, and compile for FPGA hardware.
 
 
 The compiler options used are explained in the table.
+
 | Flag               | Explanation
 |:---                  |:---
 | `-fintelfpga`      | Perform ahead-of-time compilation for FPGA.
@@ -199,13 +200,24 @@ The compiler options used are explained in the table.
 | `-Xsboard`         | Optional argument to specify the FPGA board target. <br> If omitted, a default FPGA board is chosen.
 | `-fsycl-link=early`| Instructs the compiler to stop after creating the FPGA early image (and associated optimization report).
 
-Notice that whether you target the FPGA emulator or FPGA hardware must be specified twice: through compiler options for the ahead-of-time compilation and through the runtime device selector.
+Notice that whether you target the FPGA emulator or FPGA hardware must
+be specified twice: through compiler options for the ahead-of-time
+compilation and through the runtime device selector.
 
 
 ### Additional Documentation
-- [Explore SYCL* Through Intel&reg; FPGA Code Samples](https://software.intel.com/content/www/us/en/develop/articles/explore-dpcpp-through-intel-fpga-code-samples.html) helps you to navigate the samples and build your knowledge of FPGAs and SYCL.
-- [FPGA Optimization Guide for Intel&reg; oneAPI Toolkits](https://software.intel.com/content/www/us/en/develop/documentation/oneapi-fpga-optimization-guide) helps you understand how to target FPGAs using SYCL and Intel&reg; oneAPI Toolkits.
-- [Intel&reg; oneAPI Programming Guide](https://software.intel.com/en-us/oneapi-programming-guide) helps you understand target-independent, SYCL-compliant programming using Intel&reg; oneAPI Toolkits.
+- [Explore SYCL* Through Intel&reg; FPGA Code
+  Samples](https://software.intel.com/content/www/us/en/develop/articles/explore-dpcpp-through-intel-fpga-code-samples.html)
+  helps you to navigate the samples and build your knowledge of FPGAs
+  and SYCL.
+- [FPGA Optimization Guide for Intel&reg; oneAPI
+  Toolkits](https://software.intel.com/content/www/us/en/develop/documentation/oneapi-fpga-optimization-guide)
+  helps you understand how to target FPGAs using SYCL and Intel&reg;
+  oneAPI Toolkits.
+- [Intel&reg; oneAPI Programming
+  Guide](https://software.intel.com/en-us/oneapi-programming-guide)
+  helps you understand target-independent, SYCL-compliant programming
+  using Intel&reg; oneAPI Toolkits.
 
 ## Key Concepts
 * How and why compiling SYCL*-compliant code to FPGA differs from CPU or GPU
@@ -225,13 +237,27 @@ Notice that whether you target the FPGA emulator or FPGA hardware must be specif
 > - `C:\Program Files(x86)\Intel\oneAPI\setvars.bat`
 > - For PowerShell*, use the following command: `cmd.exe "/K" '"C:\Program Files (x86)\Intel\oneAPI\setvars.bat" && powershell'`
 >
->For more information on environment variables, see **Use the setvars Script** for [Linux or macOS](https://www.intel.com/content/www/us/en/develop/documentation/oneapi-programming-guide/top/oneapi-development-environment-setup/use-the-setvars-script-with-linux-or-macos.html), or [Windows](https://www.intel.com/content/www/us/en/develop/documentation/oneapi-programming-guide/top/oneapi-development-environment-setup/use-the-setvars-script-with-windows.html).
+> For more information on environment variables, see **Use the setvars
+> Script** for [Linux or
+> macOS](https://www.intel.com/content/www/us/en/develop/documentation/oneapi-programming-guide/top/oneapi-development-environment-setup/use-the-setvars-script-with-linux-or-macos.html),
+> or
+> [Windows](https://www.intel.com/content/www/us/en/develop/documentation/oneapi-programming-guide/top/oneapi-development-environment-setup/use-the-setvars-script-with-windows.html).
 
 ### Include Files
 The included header `dpc_common.hpp` is located at `%ONEAPI_ROOT%\dev-utilities\latest\include` on your development system.
 
 ### Running Samples in Intel&reg; DevCloud
-If running a sample in the Intel&reg; DevCloud, remember that you must specify the type of compute node and whether to run in batch or interactive mode. Compiles to FPGA are only supported on fpga_compile nodes. Executing programs on FPGA hardware is only supported on fpga_runtime nodes of the appropriate type, such as fpga_runtime:arria10 or fpga_runtime:stratix10.  Neither compiling nor executing programs on FPGA hardware are supported on the login nodes. For more information, see the Intel® oneAPI Base Toolkit Get Started Guide ([https://devcloud.intel.com/oneapi/documentation/base-toolkit/](https://devcloud.intel.com/oneapi/documentation/base-toolkit/)).
+
+If running a sample in the Intel&reg; DevCloud, remember that you must
+specify the type of compute node and whether to run in batch or
+interactive mode. Compiles to FPGA are only supported on fpga_compile
+nodes. Executing programs on FPGA hardware is only supported on
+fpga_runtime nodes of the appropriate type, such as
+fpga_runtime:arria10 or fpga_runtime:stratix10.  Neither compiling nor
+executing programs on FPGA hardware are supported on the login
+nodes. For more information, see the Intel® oneAPI Base Toolkit Get
+Started Guide
+([https://devcloud.intel.com/oneapi/documentation/base-toolkit/](https://devcloud.intel.com/oneapi/documentation/base-toolkit/)).
 
 When compiling for FPGA hardware, it is recommended to increase the job timeout to 12h.
 
@@ -268,12 +294,17 @@ To learn more about the extensions, see the
    ```
    cmake .. -DFPGA_BOARD=intel_s10sx_pac:pac_s10
    ```
-   You can also compile for a custom FPGA platform. Ensure that the board support package is installed on your system. Then run `cmake` using the command:
+   You can also compile for a custom FPGA platform. Ensure that the
+   board support package is installed on your system. Then run `cmake`
+   using the command:
    ```
    cmake .. -DFPGA_BOARD=<board-support-package>:<board-variant>
    ```
 
-2. Compile the design through the generated `Makefile`. The following build targets are provided, matching the recommended development flow:
+2. Compile the design through the generated `Makefile`. The following
+   build targets are provided, matching the recommended development
+   flow:
+
 
    * Compile for [emulation](#fpga-emulator) (compiles quickly, targets emulated FPGA device):
       ```
@@ -287,7 +318,11 @@ To learn more about the extensions, see the
      ```
      make fpga
      ```
-3. (Optional) As the above hardware compile may take several hours to complete, FPGA precompiled binaries (compatible with Linux* Ubuntu* 18.04) can be downloaded <a href="https://iotdk.intel.com/fpga-precompiled-binaries/latest/fpga_compile.fpga.tar.gz" download>here</a>.
+3. (Optional) As the above hardware compile may take several hours to
+   complete, FPGA precompiled binaries (compatible with Linux* Ubuntu*
+   18.04) can be downloaded <a
+   href="https://iotdk.intel.com/fpga-precompiled-binaries/latest/fpga_compile.fpga.tar.gz"
+   download>here</a>.
 
 ### On a Windows* System
 
@@ -310,7 +345,9 @@ To learn more about the extensions, see the
    cmake -G "NMake Makefiles" .. -DFPGA_BOARD=<board-support-package>:<board-variant>
    ```
 
-2. Compile the design through the generated `Makefile`. The following build targets are provided, matching the recommended development flow:
+2. Compile the design through the generated `Makefile`. The following
+   build targets are provided, matching the recommended development
+   flow:
 
    * Compile for emulation (compiles quickly, targets emulated FPGA device):
      ```
@@ -341,13 +378,19 @@ dependencies and permissions errors.
 
 ### In Third-Party Integrated Development Environments (IDEs)
 
-You can compile and run this tutorial in the Eclipse* IDE (in Linux*) and the Visual Studio* IDE (in Windows*). For instructions, refer to the following link: [FPGA Workflows on Third-Party IDEs for Intel&reg; oneAPI Toolkits](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-oneapi-dpcpp-fpga-workflow-on-ide.html).
+You can compile and run this tutorial in the Eclipse* IDE (in Linux*)
+and the Visual Studio* IDE (in Windows*). For instructions, refer to
+the following link: [FPGA Workflows on Third-Party IDEs for Intel&reg;
+oneAPI
+Toolkits](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-oneapi-dpcpp-fpga-workflow-on-ide.html).
 
 
 ## Examining the Reports
 Locate `report.html` in the `fpga_compile_report.prj/reports/` directory. Open the report in any of Chrome*, Firefox*, Edge*, or Internet Explorer*.
 
-Browse the reports that were generated for the `VectorAdd` kernel's FPGA early image. You may also wish to examine the reports generated by the full FPGA hardware compile and compare their contents.
+Browse the reports that were generated for the `VectorAdd` kernel's
+FPGA early image. You may also wish to examine the reports generated
+by the full FPGA hardware compile and compare their contents.
 
 ## Running the Sample
 
