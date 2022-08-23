@@ -1,5 +1,8 @@
 # Compiling SYCL* for FPGA
-This FPGA tutorial introduces how to compile SYCL*-compliant code for FPGA through a simple vector addition example. If you are new to SYCL* for FPGA, start with this sample.
+
+This FPGA tutorial introduces how to compile SYCL*-compliant code for
+FPGA through a simple vector addition example. If you are new to SYCL*
+for FPGA, start with this sample.
 
 | Optimized for                     | Description
 |:---                                 |:---
@@ -10,19 +13,41 @@ This FPGA tutorial introduces how to compile SYCL*-compliant code for FPGA throu
 | Time to complete                  | 15 minutes
 
 ## Purpose
-Field-programmable gate arrays (FPGAs) are configurable integrated circuits that can be programmed to implement arbitrary circuit topologies. Classified as *spatial* compute architectures, FPGAs differ significantly from fixed Instruction Set Architecture (ISA) devices like CPUs and GPUs. FPGAs offer a different set of optimization trade-offs from these traditional accelerator devices.
 
-While SYCL* code can be compiled for CPU, GPU, or FPGA, compiling to FPGA is somewhat different. This tutorial explains these differences and shows how to compile a "Hello World" style vector addition kernel for FPGA, following the recommended workflow.
+Field-programmable gate arrays (FPGAs) are configurable integrated
+circuits that can be programmed to implement arbitrary circuit
+topologies. Classified as *spatial* compute architectures, FPGAs
+differ significantly from fixed Instruction Set Architecture (ISA)
+devices like CPUs and GPUs. FPGAs offer a different set of
+optimization trade-offs from these traditional accelerator devices.
+
+While SYCL* code can be compiled for CPU, GPU, or FPGA, compiling to
+FPGA is somewhat different. This tutorial explains these differences
+and shows how to compile a "Hello World" style vector addition kernel
+for FPGA, following the recommended workflow.
 
 ### Why is compilation different for FPGA?
-FPGAs differ from CPUs and GPUs in many interesting ways. However, in this tutorial's scope, there is only one difference that matters: compared to CPU or GPU, generating a device image for FPGA hardware is a computationally intensive and time-consuming process. It is usual for an FPGA compile to take several hours to complete.
 
-For this reason, only ahead-of-time (or "offline") kernel compilation mode is supported for FPGA. The long compile time for FPGA hardware makes just-in-time (or "online") compilation impractical.
+FPGAs differ from CPUs and GPUs in many interesting ways. However, in
+this tutorial's scope, there is only one difference that matters:
+compared to CPU or GPU, generating a device image for FPGA hardware is
+a computationally intensive and time-consuming process. It is usual
+for an FPGA compile to take several hours to complete.
 
-Long compile times are detrimental to developer productivity. The Intel® oneAPI DPC++ Compiler provides several mechanisms that enable developers targeting FPGA to iterate quickly on their designs. By circumventing the time-consuming process of full FPGA compilation wherever possible, SYCL for FPGA developers can enjoy the fast compile times familiar to CPU and GPU developers.
+For this reason, only ahead-of-time (or "offline") kernel compilation
+mode is supported for FPGA. The long compile time for FPGA hardware
+makes just-in-time (or "online") compilation impractical.
+
+Long compile times are detrimental to developer productivity. The
+Intel® oneAPI DPC++ Compiler provides several mechanisms that enable
+developers targeting FPGA to iterate quickly on their designs. By
+circumventing the time-consuming process of full FPGA compilation
+wherever possible, SYCL for FPGA developers can enjoy the fast compile
+times familiar to CPU and GPU developers.
 
 
 ### Three types of SYCL for FPGA compilation
+
 The three types of FPGA compilation are summarized in the table below.
 
 | Device Image Type    | Time to Compile | Description
@@ -31,33 +56,85 @@ The three types of FPGA compilation are summarized in the table below.
 | Optimization Report  | minutes         | The FPGA device code is partially compiled for hardware. <br> The compiler generates an optimization report that describes the structures generated on the FPGA, identifies performance bottlenecks, and estimates resource utilization.
 | FPGA Hardware        | hours           | Generates the real FPGA bitstream to execute on the target FPGA platform
 
-The typical FPGA development workflow is to iterate in each of these stages, refining the code using the feedback provided by that stage. Intel® recommends relying on emulation and the optimization report whenever possible.
+The typical FPGA development workflow is to iterate in each of these
+stages, refining the code using the feedback provided by that
+stage. Intel® recommends relying on emulation and the optimization
+report whenever possible.
 
-- Compiling for FPGA emulation or generating the FPGA optimization report requires only the Intel® oneAPI DPC++ Compiler (part of the Intel® oneAPI Base Toolkit).
-- An FPGA hardware compile requires the Intel® FPGA Add-On for oneAPI Base Toolkit.
+- Compiling for FPGA emulation or generating the FPGA optimization
+  report requires only the Intel® oneAPI DPC++ Compiler (part of the
+  Intel® oneAPI Base Toolkit).
+
+- An FPGA hardware compile requires the Intel® FPGA Add-On for oneAPI
+  Base Toolkit.
 
 #### FPGA Emulator
 
-The FPGA emulator is the fastest method to verify the correctness of your code. The FPGA emulator executes the SYCL* device code on the CPU. The emulator is similar to the SYCL* host device, but unlike the host device, the FPGA emulator device supports FPGA extensions such as FPGA pipes and `fpga_reg`.
+The FPGA emulator is the fastest method to verify the correctness of
+your code. The FPGA emulator executes the SYCL* device code on the
+CPU. The emulator is similar to the SYCL* host device, but unlike the
+host device, the FPGA emulator device supports FPGA extensions such as
+FPGA pipes and `fpga_reg`.
 
-There are two important caveats to remember when using the FPGA emulator.
-*  **Performance is not representative.** _Never_ draw inferences about FPGA performance from the FPGA emulator. The FPGA emulator's timing behavior is uncorrelated to that of the physical FPGA hardware. For example, an optimization that yields a 100x performance improvement on the FPGA may show no impact on the emulator performance. It may show an unrelated increase or even a decrease.
-* **Undefined behavior may differ.** If your code produces different results when compiled for the FPGA emulator versus FPGA hardware, your code most likely exercises undefined behavior. By definition, undefined behavior is not specified by the language specification and may manifest differently on different targets.
+There are two important caveats to remember when using the FPGA
+emulator.
+
+*  **Performance is not representative.** _Never_ draw inferences
+   about FPGA performance from the FPGA emulator. The FPGA emulator's
+   timing behavior is uncorrelated to that of the physical FPGA
+   hardware. For example, an optimization that yields a 100x
+   performance improvement on the FPGA may show no impact on the
+   emulator performance. It may show an unrelated increase or even a
+   decrease.
+* **Undefined behavior may differ.** If your code produces different
+  results when compiled for the FPGA emulator versus FPGA hardware,
+  your code most likely exercises undefined behavior. By definition,
+  undefined behavior is not specified by the language specification
+  and may manifest differently on different targets.
 
 #### Optimization Report
+
 A full FPGA compilation occurs in two stages:
-1. **FPGA early image:** The SYCL device code is optimized and converted into an FPGA design specified in Verilog RTL (a low-level, native entry language for FPGAs). This intermediate compilation result is the FPGA early device image, which is *not* executable. This FPGA early image compilation process takes minutes.
-2. **FPGA hardware image:** The Verilog RTL specifying the design's circuit topology is mapped onto the FPGA's sea of primitive hardware resources by the Intel® Quartus® Prime software.  Intel® Quartus® Prime is included in the Intel® FPGA Add-On, which is required for this compilation stage. The result is an FPGA hardware binary (also referred to as a bitstream). This compilation process takes hours.
 
-Optimization reports are generated after both stages. The optimization report generated after the FPGA early device image, sometimes called the "static report," contains significant information about how the compiler has transformed your device code into an FPGA design. The report includes visualizations of structures generated on the FPGA, performance and expected performance bottleneck information, and estimated resource utilization.
+1. **FPGA early image:** The SYCL device code is optimized and
+   converted into an FPGA design specified in Verilog RTL (a
+   low-level, native entry language for FPGAs). This intermediate
+   compilation result is the FPGA early device image, which is *not*
+   executable. This FPGA early image compilation process takes
+   minutes.
 
-The [FPGA Optimization Guide for Intel® oneAPI Toolkits Developer Guide](https://software.intel.com/content/www/us/en/develop/documentation/oneapi-fpga-optimization-guide/top/analyze-your-design.html) contains a chapter on how to analyze the reports generated after the FPGA early image and FPGA image.
+2. **FPGA hardware image:** The Verilog RTL specifying the design's
+   circuit topology is mapped onto the FPGA's sea of primitive
+   hardware resources by the Intel® Quartus® Prime software.  Intel®
+   Quartus® Prime is included in the Intel® FPGA Add-On, which is
+   required for this compilation stage. The result is an FPGA hardware
+   binary (also referred to as a bitstream). This compilation process
+   takes hours.
+
+Optimization reports are generated after both stages. The optimization
+report generated after the FPGA early device image, sometimes called
+the "static report," contains significant information about how the
+compiler has transformed your device code into an FPGA design. The
+report includes visualizations of structures generated on the FPGA,
+performance and expected performance bottleneck information, and
+estimated resource utilization.
+
+The [FPGA Optimization Guide for Intel® oneAPI Toolkits Developer
+Guide](https://software.intel.com/content/www/us/en/develop/documentation/oneapi-fpga-optimization-guide/top/analyze-your-design.html)
+contains a chapter on how to analyze the reports generated after the
+FPGA early image and FPGA image.
 
 #### FPGA Hardware
-This is a full compile through to the FPGA hardware image. You can target the Intel® PAC with Intel Arria® 10 GX FPGA, the Intel® FPGA PAC D5005 (with Intel Stratix® 10 SX), or a custom board.
+
+This is a full compile through to the FPGA hardware image. You can
+target the Intel® PAC with Intel Arria® 10 GX FPGA, the Intel® FPGA
+PAC D5005 (with Intel Stratix® 10 SX), or a custom board.
 
 ### Device Selectors
-The following code snippet demonstrates how you can specify the target device in your source code. The selector is used to specify the target device at runtime.
+
+The following code snippet demonstrates how you can specify the target
+device in your source code. The selector is used to specify the target
+device at runtime.
 
 ```c++
 // FPGA device selectors are defined in this utility header
@@ -77,10 +154,20 @@ int main() {
   ...
 }
 ```
-Notice that the FPGA emulator and the FPGA are different target devices. It is recommended to use a preprocessor define to choose between the emulator and FPGA selectors. This makes it easy to switch between targets using only command-line options. Since the FPGA only supports ahead-of-time compilation, dynamic selectors (such as the default_selector) are less useful than explicit selectors when targeting FPGA.
+
+Notice that the FPGA emulator and the FPGA are different target
+devices. It is recommended to use a preprocessor define to choose
+between the emulator and FPGA selectors. This makes it easy to switch
+between targets using only command-line options. Since the FPGA only
+supports ahead-of-time compilation, dynamic selectors (such as the
+default_selector) are less useful than explicit selectors when
+targeting FPGA.
 
 ### Compiler Options
-This section includes a helpful list of commands and options to compile this design for the FPGA emulator, generate the FPGA early image optimization reports, and compile for FPGA hardware.
+
+This section includes a helpful list of commands and options to
+compile this design for the FPGA emulator, generate the FPGA early
+image optimization reports, and compile for FPGA hardware.
 
 **FPGA emulator**
 
